@@ -1,21 +1,22 @@
 package ru.unit6.course.android.retrofit
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import dagger.android.support.DaggerAppCompatActivity
 import ru.unit6.course.android.retrofit.data.database.AppDatabase
-import ru.unit6.course.android.retrofit.ui.main.MainFragment
+import ru.unit6.course.android.retrofit.di.FragmentFactory
+import javax.inject.Inject
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : DaggerAppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, MainFragment.newInstance())
-                .commitNow()
-        }
 
-        AppDatabase.invoke(applicationContext)
+        AppDatabase.getInstance(applicationContext)
+    }
+
+    @Inject
+    fun setFragmentFactory(fragmentFactory: FragmentFactory) {
+        supportFragmentManager.fragmentFactory = fragmentFactory
     }
 }

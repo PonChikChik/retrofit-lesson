@@ -15,15 +15,19 @@ import okhttp3.*
 import ru.unit6.course.android.retrofit.R
 import ru.unit6.course.android.retrofit.data.model.User
 import ru.unit6.course.android.retrofit.data.model.UserDB
+import ru.unit6.course.android.retrofit.di.ViewModelFactory
 import ru.unit6.course.android.retrofit.utils.Status
+import javax.inject.Inject
 
-class MainFragment : Fragment() {
+class MainFragment @Inject constructor(
+    viewModelFactory: ViewModelFactory
+) : Fragment() {
 
-    companion object {
-        fun newInstance() = MainFragment()
+    private val viewModel: MainViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
     }
 
-    private lateinit var viewModel: MainViewModel
+
     private lateinit var adapter: MainAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
@@ -44,9 +48,8 @@ class MainFragment : Fragment() {
 
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         setupUI()
         setupObservers()

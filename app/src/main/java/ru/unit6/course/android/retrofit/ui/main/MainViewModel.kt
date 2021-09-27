@@ -4,19 +4,16 @@ import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ru.unit6.course.android.retrofit.data.api.ApiHelper
-import ru.unit6.course.android.retrofit.data.api.RetrofitBuilder
 import ru.unit6.course.android.retrofit.data.database.AppDatabase
-import ru.unit6.course.android.retrofit.data.model.User
 import ru.unit6.course.android.retrofit.data.model.UserDB
 import ru.unit6.course.android.retrofit.data.repository.MainRepository
 import ru.unit6.course.android.retrofit.utils.Resource
+import javax.inject.Inject
 
-class MainViewModel : ViewModel() {
-
-    private val apiHelper = ApiHelper(RetrofitBuilder.apiService)
-    private val mainRepository: MainRepository = MainRepository(apiHelper)
-    private val appDatabase = AppDatabase.getDatabase()
+class MainViewModel @Inject constructor(
+    private val mainRepository: MainRepository,
+    private val appDatabase: AppDatabase
+) : ViewModel() {
 
     private val _localUsers = MutableLiveData<List<UserDB>>()
     val localUsers: LiveData<List<UserDB>>

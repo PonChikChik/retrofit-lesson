@@ -15,12 +15,12 @@ abstract class AppDatabase: RoomDatabase() {
         private var INSTANCE: AppDatabase? = null
         private const val DATABASE_NAME = "course"
 
-        fun invoke(context: Context): AppDatabase {
+        fun getInstance(context: Context): AppDatabase {
             if (INSTANCE == null) {
                 synchronized(AppDatabase::class) {
                     INSTANCE = Room
                         .databaseBuilder(
-                            context,
+                            context.applicationContext,
                             AppDatabase::class.java,
                             DATABASE_NAME
                         ).build()
@@ -29,8 +29,6 @@ abstract class AppDatabase: RoomDatabase() {
 
             return INSTANCE!!
         }
-
-        fun getDatabase() = INSTANCE!!
     }
 
 }
