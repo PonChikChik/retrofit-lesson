@@ -11,10 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import okhttp3.*
 import ru.unit6.course.android.retrofit.R
-import ru.unit6.course.android.retrofit.data.model.User
-import ru.unit6.course.android.retrofit.data.model.UserDB
 import ru.unit6.course.android.retrofit.di.ViewModelFactory
 import ru.unit6.course.android.retrofit.utils.Status
 import javax.inject.Inject
@@ -68,23 +65,14 @@ class MainFragment @Inject constructor(
     }
 
     private fun setupObservers() {
-        viewModel.getUsers().observe(viewLifecycleOwner) { resource ->
+        viewModel.users.observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
                     recyclerView.visibility = View.VISIBLE
                     progressBar.visibility = View.GONE
                     resource.data?.let { users ->
                         adapter.addUsers(users)
-                        viewModel.setAllUsersToDatabase(
-                            users = users.map { user ->
-                                UserDB(
-                                    id = user.id,
-                                    name = user.name,
-                                    avatar = user.avatar,
-                                    email = user.email,
-                                )
-                            }
-                        )
+                        viewModel.setAllUsersToDatabase(users)
                     }
                 }
                 Status.ERROR -> {
