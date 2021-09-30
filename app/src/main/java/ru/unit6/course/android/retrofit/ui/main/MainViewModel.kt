@@ -1,47 +1,63 @@
 package ru.unit6.course.android.retrofit.ui.main
 
-import androidx.lifecycle.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import ru.unit6.course.android.retrofit.data.database.AppDatabase
-import ru.unit6.course.android.retrofit.data.model.UserDB
-import ru.unit6.course.android.retrofit.data.repository.MainRepository
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import ru.unit6.course.android.retrofit.data.model.User
+import ru.unit6.course.android.retrofit.ui.main.MainAdapter.UserItems
+import ru.unit6.course.android.retrofit.usecases.GetUsersFromApiUseCase
+import ru.unit6.course.android.retrofit.usecases.GetUsersFromDatabaseUseCase
+import ru.unit6.course.android.retrofit.usecases.SetUsersToDatabaseUseCase
 import ru.unit6.course.android.retrofit.utils.Resource
 import javax.inject.Inject
 
 class MainViewModel @Inject constructor(
-    private val mainRepository: MainRepository,
-    private val appDatabase: AppDatabase
+    private val getUsersFromApiUseCase: GetUsersFromApiUseCase,
+    private val getUsersFromDatabaseUseCase: GetUsersFromDatabaseUseCase,
+    private val setUsersToDatabaseUseCase: SetUsersToDatabaseUseCase,
 ) : ViewModel() {
 
-    private val _localUsers = MutableLiveData<List<UserDB>>()
-    val localUsers: LiveData<List<UserDB>>
-        get() = _localUsers
+    private val _allUsers = MutableLiveData<Resource<List<UserItems>>>()
 
-    fun getUsersFromDatabase() =
-        viewModelScope.launch {
-            try {
-                _localUsers.postValue(appDatabase.userDao().getAllUsers())
-            } catch (exception: Exception) {
-                throw exception
-            }
-        }
+    private val _users = MutableLiveData<Resource<List<UserItems>>>()
+    val users: LiveData<Resource<List<UserItems>>>
+        get() = _allUsers
 
-    fun setAllUsersToDatabase(users: List<UserDB>) =
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                appDatabase.userDao().insertAllUsers(users)
-                getUsersFromDatabase()
-            }
-        }
-
-    fun getUsers() = liveData(Dispatchers.IO) {
-        emit(Resource.loading(data = null))
-        try {
-            emit(Resource.success(data = mainRepository.getUsers()))
-        } catch (exception: Exception) {
-            emit(Resource.error(data = null, message = exception.message ?: "Error Occurred!"))
-        }
+    init {
+        getUsers()
     }
+
+    fun getUsersFromDatabase() = getUsersFromDatabaseUseCase.invoke()
+        .observeOn(AndroidSchedulers.mainThread())
+        .doOnSubscribe {
+            _users.postValue(Resource.loading(data = null))
+        }
+        .doOnError { error ->
+            _users.postValue(Resource.error(data = null, message = error.message ?: "Error Occurred!"))
+        }
+        .subscribe { local ->
+            _allUsers.postValue(Resource.success(data = local.map { UserItems.UserItemDB(it) }))
+            _users.postValue(Resource.success(data = local.map { UserItems.UserItemDB(it) }))
+        }
+
+    fun setAllUsersToDatabase(users: List<User>) = setUsersToDatabaseUseCase.invoke(users)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe { getUsersFromDatabase() }
+
+    fun getUsers(): Disposable = getUsersFromApiUseCase.invoke()
+        .subscribeOn(AndroidSchedulers.mainThread())
+        .doOnSubscribe {
+            _users.postValue(Resource.loading(data = null))
+        }
+        .doOnError { error ->
+            _users.postValue(Resource.error(data = null, message = error.message ?: "Error Occurred!"))
+        }
+        .subscribe { userList ->
+            setAllUsersToDatabase(userList)
+            _allUsers.postValue(Resource.success(data = userList.map { UserItems.UserItemApi(it) }))
+            _users.postValue(Resource.success(data = userList.map { UserItems.UserItemApi(it) }))
+        }
+
 }

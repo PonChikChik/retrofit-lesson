@@ -1,0 +1,21 @@
+package ru.unit6.course.android.retrofit.usecases
+
+import ru.unit6.course.android.retrofit.data.model.User
+import ru.unit6.course.android.retrofit.data.repository.LocalUsersRepository
+import javax.inject.Inject
+
+class GetUsersFromDatabaseUseCase @Inject constructor(
+    private val localUsersRepository: LocalUsersRepository
+) {
+
+    operator fun invoke() = localUsersRepository.getAllLocalUsers().map { users ->
+        users.map {
+            User(
+                id = it.id,
+                name = it.name,
+                email = it.email,
+                avatar = it.avatar,
+            )
+        }
+    }
+}

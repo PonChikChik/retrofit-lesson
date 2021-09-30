@@ -9,7 +9,7 @@ import ru.unit6.course.android.retrofit.data.model.UserDB
 @Database(entities = [UserDB::class], version = 1)
 abstract class AppDatabase: RoomDatabase() {
 
-    abstract fun userDao() : UserDao
+    abstract val userDao: UserDao
 
     companion object {
         private var INSTANCE: AppDatabase? = null
