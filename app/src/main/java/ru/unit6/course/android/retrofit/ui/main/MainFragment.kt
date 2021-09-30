@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -28,6 +30,7 @@ class MainFragment @Inject constructor(
     private lateinit var adapter: MainAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
+    private lateinit var searchEditText: EditText
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +42,11 @@ class MainFragment @Inject constructor(
         view.apply {
             recyclerView = findViewById(R.id.recyclerView)
             progressBar = findViewById(R.id.progressBar)
+            searchEditText = findViewById(R.id.search_text)
+        }
+
+        searchEditText.addTextChangedListener { text ->
+
         }
 
         return view
@@ -72,7 +80,6 @@ class MainFragment @Inject constructor(
                     progressBar.visibility = View.GONE
                     resource.data?.let { users ->
                         adapter.addUsers(users)
-                        viewModel.setAllUsersToDatabase(users)
                     }
                 }
                 Status.ERROR -> {
@@ -85,10 +92,6 @@ class MainFragment @Inject constructor(
                     recyclerView.visibility = View.GONE
                 }
             }
-        }
-
-        viewModel.localUsers.observe(viewLifecycleOwner) {
-            it
         }
     }
 }
