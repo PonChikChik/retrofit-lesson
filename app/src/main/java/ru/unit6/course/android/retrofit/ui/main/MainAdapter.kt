@@ -79,6 +79,7 @@ class MainAdapter(private val users: ArrayList<UserItems>) : RecyclerView.Adapte
         this.users.apply {
             clear()
             addAll(users)
+            notifyDataSetChanged()
         }
     }
 

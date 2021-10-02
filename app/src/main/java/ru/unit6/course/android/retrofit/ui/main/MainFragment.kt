@@ -46,7 +46,7 @@ class MainFragment @Inject constructor(
         }
 
         searchEditText.addTextChangedListener { text ->
-
+            viewModel.setSearchQuery(text.toString())
         }
 
         return view
@@ -77,6 +77,7 @@ class MainFragment @Inject constructor(
             when (resource.status) {
                 Status.SUCCESS -> {
                     recyclerView.visibility = View.VISIBLE
+                    searchEditText.visibility = View.VISIBLE
                     progressBar.visibility = View.GONE
                     resource.data?.let { users ->
                         adapter.addUsers(users)
